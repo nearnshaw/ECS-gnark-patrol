@@ -1,12 +1,12 @@
-const point1 = new Vector3(5, 0.5, 5)
-const point2 = new Vector3(5, 0.5, 10)
-const point3 = new Vector3(5, 0.5, 15)
-const point4 = new Vector3(10, 0.5, 15)
-const point5 = new Vector3(15, 0.5, 15)
-const point6 = new Vector3(15, 0.5, 5)
-const point7 = new Vector3(15, 0.5, 10)
+const point1 = new Vector3(5, 0, 5)
+const point2 = new Vector3(5, 0, 10)
+const point3 = new Vector3(5, 0, 15)
+const point4 = new Vector3(10, 0, 15)
+const point5 = new Vector3(15, 0, 15)
+const point6 = new Vector3(15, 0, 5)
+const point7 = new Vector3(15, 0, 10)
 
-const myPath: Vector3[] = [point1, point2, point3, point4, point5, point6])
+const myPath: Vector3[] = [point1, point2, point3, point4, point5, point6]
 
 // how many frames to walk each path segment
 const speed = 120

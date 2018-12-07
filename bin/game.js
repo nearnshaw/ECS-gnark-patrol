@@ -12,13 +12,13 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 define("game", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var point1 = new Vector3(5, 0.5, 5);
-    var point2 = new Vector3(5, 0.5, 10);
-    var point3 = new Vector3(5, 0.5, 15);
-    var point4 = new Vector3(10, 0.5, 15);
-    var point5 = new Vector3(15, 0.5, 15);
-    var point6 = new Vector3(15, 0.5, 5);
-    var point7 = new Vector3(15, 0.5, 10);
+    var point1 = new Vector3(5, 0, 5);
+    var point2 = new Vector3(5, 0, 10);
+    var point3 = new Vector3(5, 0, 15);
+    var point4 = new Vector3(10, 0, 15);
+    var point5 = new Vector3(15, 0, 15);
+    var point6 = new Vector3(15, 0, 5);
+    var point7 = new Vector3(15, 0, 10);
     var myPath = [point1, point2, point3, point4, point5, point6];
     // how many frames to walk each path segment
     var speed = 120;
