@@ -9,7 +9,7 @@ const point7 = new Vector3(15, 0, 10)
 const myPath: Vector3[] = [point1, point2, point3, point4, point5, point6]
 
 // how many frames to walk each path segment
-const speed = 120
+const speed = 250
 
 // how many frames to pause in between
 const rest = 30
@@ -71,14 +71,14 @@ let gnark = new Entity()
 gnark.set(new Transform())
 gnark.get(Transform).position.set(5, 3, 5)
 gnark.get(Transform).scale.setAll(0.5)
-gnark.set(new GLTFShape("models/Pirate.glb"))
+gnark.set(new GLTFShape("models/gnark.gltf"))
 
 // Add animations
-//const clipSwim = new AnimationClip("swim")
-//gnark.get(GLTFShape).addClip(clipSwim)
+const walkClip = new AnimationClip("walk")
+gnark.get(GLTFShape).addClip(walkClip)
 
-// Activate swim animation
-//clipSwim.play()
+// Activate walk animation
+walkClip.play()
 
 // add a path data component
 gnark.set(new PathData())

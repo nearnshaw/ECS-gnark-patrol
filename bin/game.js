@@ -21,7 +21,7 @@ define("game", ["require", "exports"], function (require, exports) {
     var point7 = new Vector3(15, 0, 10);
     var myPath = [point1, point2, point3, point4, point5, point6];
     // how many frames to walk each path segment
-    var speed = 120;
+    var speed = 250;
     // how many frames to pause in between
     var rest = 30;
     var PathData = /** @class */ (function () {
@@ -84,12 +84,12 @@ define("game", ["require", "exports"], function (require, exports) {
     gnark.set(new Transform());
     gnark.get(Transform).position.set(5, 3, 5);
     gnark.get(Transform).scale.setAll(0.5);
-    gnark.set(new GLTFShape("models/Pirate.glb"));
+    gnark.set(new GLTFShape("models/gnark.gltf"));
     // Add animations
-    //const clipSwim = new AnimationClip("swim")
-    //gnark.get(GLTFShape).addClip(clipSwim)
-    // Activate swim animation
-    //clipSwim.play()
+    var walkClip = new AnimationClip("walk");
+    gnark.get(GLTFShape).addClip(walkClip);
+    // Activate walk animation
+    walkClip.play();
     // add a path data component
     gnark.set(new PathData());
     //gnark.set(new RotateData())
