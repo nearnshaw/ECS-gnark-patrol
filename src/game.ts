@@ -9,7 +9,7 @@ const point7 = new Vector3(15, 0, 10)
 const myPath: Vector3[] = [point1, point2, point3, point4, point5, point6]
 
 // how many frames to walk each path segment
-const speed = 250
+const speed = 200
 
 // how many frames to pause in between
 const rest = 30
@@ -70,12 +70,16 @@ engine.addSystem(new PatrolPath())
 let gnark = new Entity()
 gnark.set(new Transform())
 gnark.get(Transform).position.set(5, 3, 5)
-gnark.get(Transform).scale.setAll(0.5)
+gnark.get(Transform).scale.setAll(0.75)
 gnark.set(new GLTFShape("models/gnark.gltf"))
 
 // Add animations
 const walkClip = new AnimationClip("walk")
+const turnRClip = new AnimationClip("turnRight", {loop:false})
+const raiseDeadClip = new AnimationClip("raiseDead", {loop:false})
 gnark.get(GLTFShape).addClip(walkClip)
+gnark.get(GLTFShape).addClip(turnRClip)
+gnark.get(GLTFShape).addClip(raiseDeadClip)
 
 // Activate walk animation
 walkClip.play()
@@ -83,7 +87,7 @@ walkClip.play()
 // add a path data component
 gnark.set(new PathData())
 //gnark.set(new RotateData())
-gnark.get(Transform).lookAt(myPath[1])
+gnark.get(Transform).rotation.setEuler(0, 0, 0)
 
 // Add shark to engine
 engine.addEntity(gnark)
