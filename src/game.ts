@@ -1,18 +1,16 @@
 const point1 = new Vector3(5, 0, 5)
-const point2 = new Vector3(5, 0, 10)
-const point3 = new Vector3(5, 0, 15)
-const point4 = new Vector3(10, 0, 15)
-const point5 = new Vector3(15, 0, 15)
-const point6 = new Vector3(15, 0, 5)
-const point7 = new Vector3(15, 0, 10)
+const point2 = new Vector3(5, 0, 15)
+const point3 = new Vector3(10, 0, 15)
+const point4 = new Vector3(15, 0, 15)
+const point5 = new Vector3(15, 0, 5)
 
-const myPath: Vector3[] = [point1, point2, point3, point4, point5, point6]
+const myPath: Vector3[] = [point1, point2, point3, point4, point5]
 
 // how many frames to walk each path segment
 const speed = 200
 
 // how many frames to pause in between
-const rest = 30
+const rest = 60
 
 @Component("pathData")
 export class PathData {
@@ -39,16 +37,23 @@ export class PatrolPath {
         path.fraction += 1 / speed
       } else{
         path.walking = false
+        walkClip.pause()
+        // if (path.nextPathIndex = 2){
+        //   raiseDeadClip.play()
+        // }else{
+        //   turnRClip.play()
+        // }   
       }
     }
     else
     {
-      if (path.remainingRest < 0){
+      if (path.remainingRest > 0){
         path.remainingRest -= 1
       }
       else{
         path.remainingRest = rest
         path.walking = true
+        walkClip.play()
         // get the next target
         path.nextPathIndex += 1
         if (path.nextPathIndex >= myPath.length) {
@@ -69,7 +74,7 @@ engine.addSystem(new PatrolPath())
 // Add Gnark
 let gnark = new Entity()
 gnark.set(new Transform())
-gnark.get(Transform).position.set(5, 3, 5)
+gnark.get(Transform).position.set(5, 0, 5)
 gnark.get(Transform).scale.setAll(0.75)
 gnark.set(new GLTFShape("models/gnark.gltf"))
 

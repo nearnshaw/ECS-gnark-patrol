@@ -13,17 +13,15 @@ define("game", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var point1 = new Vector3(5, 0, 5);
-    var point2 = new Vector3(5, 0, 10);
-    var point3 = new Vector3(5, 0, 15);
-    var point4 = new Vector3(10, 0, 15);
-    var point5 = new Vector3(15, 0, 15);
-    var point6 = new Vector3(15, 0, 5);
-    var point7 = new Vector3(15, 0, 10);
-    var myPath = [point1, point2, point3, point4, point5, point6];
+    var point2 = new Vector3(5, 0, 15);
+    var point3 = new Vector3(10, 0, 15);
+    var point4 = new Vector3(15, 0, 15);
+    var point5 = new Vector3(15, 0, 5);
+    var myPath = [point1, point2, point3, point4, point5];
     // how many frames to walk each path segment
     var speed = 200;
     // how many frames to pause in between
-    var rest = 30;
+    var rest = 60;
     var PathData = /** @class */ (function () {
         function PathData() {
             this.previousPos = myPath[0];
@@ -53,15 +51,22 @@ define("game", ["require", "exports"], function (require, exports) {
                 }
                 else {
                     path.walking = false;
+                    walkClip.pause();
+                    // if (path.nextPathIndex = 2){
+                    //   raiseDeadClip.play()
+                    // }else{
+                    //   turnRClip.play()
+                    // }   
                 }
             }
             else {
-                if (path.remainingRest < 0) {
+                if (path.remainingRest > 0) {
                     path.remainingRest -= 1;
                 }
                 else {
                     path.remainingRest = rest;
                     path.walking = true;
+                    walkClip.play();
                     // get the next target
                     path.nextPathIndex += 1;
                     if (path.nextPathIndex >= myPath.length) {
@@ -82,7 +87,7 @@ define("game", ["require", "exports"], function (require, exports) {
     // Add Gnark
     var gnark = new Entity();
     gnark.set(new Transform());
-    gnark.get(Transform).position.set(5, 3, 5);
+    gnark.get(Transform).position.set(5, 0, 5);
     gnark.get(Transform).scale.setAll(0.75);
     gnark.set(new GLTFShape("models/gnark.gltf"));
     // Add animations
