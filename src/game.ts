@@ -1,10 +1,9 @@
 const point1 = new Vector3(5, 0, 5)
 const point2 = new Vector3(5, 0, 15)
-const point3 = new Vector3(10, 0, 15)
-const point4 = new Vector3(15, 0, 15)
-const point5 = new Vector3(15, 0, 5)
+const point3 = new Vector3(15, 0, 15)
+const point4 = new Vector3(15, 0, 5)
 
-const myPath: Vector3[] = [point1, point2, point3, point4, point5]
+const myPath: Vector3[] = [point1, point2, point3, point4]
 
 // how many frames to walk each path segment
 const speed = 200
@@ -26,50 +25,56 @@ export class PatrolPath {
   update() {
     let transform = gnark.get(Transform)
     let path = gnark.get(PathData)
-    //let rotate = gnark.get(RotateData)
-    if (path.walking){
-      if (path.fraction < 1) {
-        transform.position = Vector3.Lerp(
-          path.previousPos,
-          path.target,
-          path.fraction
-          )
-        path.fraction += 1 / speed
-      } else{
-        path.walking = false
-        walkClip.pause()
-        // if (path.nextPathIndex = 2){
-        //   raiseDeadClip.play()
-        // }else{
-        //   turnRClip.play()
-        // }   
-      }
+    if (distance(transform.position, camera.position) < 2 && path.remainingRest > 0 ){
+           raiseDeadClip.play()
+           walkClip.pause()
+           path.remainingRest -= 1
     }
     else
-    {
-      if (path.remainingRest > 0){
-        path.remainingRest -= 1
-      }
-      else{
-        path.remainingRest = rest
-        path.walking = true
-        walkClip.play()
-        // get the next target
-        path.nextPathIndex += 1
-        if (path.nextPathIndex >= myPath.length) {
-          path.nextPathIndex = 0
+      {
+      if (path.walking){
+        if (path.fraction < 1) {
+          transform.position = Vector3.Lerp(
+            path.previousPos,
+            path.target,
+            path.fraction
+            )
+          path.fraction += 1 / speed
+        } else{
+          path.walking = false
+          walkClip.pause()
+          turnRClip.play() 
         }
-        path.previousPos = path.target
-        path.target = myPath[path.nextPathIndex]
-        path.fraction = 0
-        // turn Gnark in the direction of the next point
-        transform.lookAt(path.target)
+      }
+      else
+      {
+        if (path.remainingRest > 0){
+          path.remainingRest -= 1
+        }
+        else{
+          path.remainingRest = rest
+          path.walking = true
+          walkClip.play()
+          // get the next target
+          path.nextPathIndex += 1
+          if (path.nextPathIndex >= myPath.length) {
+            path.nextPathIndex = 0
+          }
+          path.previousPos = path.target
+          path.target = myPath[path.nextPathIndex]
+          path.fraction = 0
+          // turn Gnark in the direction of the next point
+          transform.lookAt(path.target)
+        }
       }
     }
   }
 }
 
 engine.addSystem(new PatrolPath())
+
+// Track user position and rotation
+const camera = Camera.instance
 
 // Add Gnark
 let gnark = new Entity()
@@ -111,3 +116,14 @@ castle.add(new Transform())
 castle.get(Transform).position.set(10, 0, 10)
 //castle.get(Transform).scale.setAll(0.5)
 engine.addEntity(castle)
+
+
+// Get distance
+/**
+ * Note: It uses {x,z} not {x,y}. The y-coordinate is how high up it is.
+ */
+function distance(pos1: Vector3, pos2: Vector3): number {
+  const a = pos1.x - pos2.x;
+  const b = pos1.z - pos2.z;
+  return Math.sqrt(a * a + b * b);
+}

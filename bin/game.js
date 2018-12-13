@@ -14,10 +14,9 @@ define("game", ["require", "exports"], function (require, exports) {
     Object.defineProperty(exports, "__esModule", { value: true });
     var point1 = new Vector3(5, 0, 5);
     var point2 = new Vector3(5, 0, 15);
-    var point3 = new Vector3(10, 0, 15);
-    var point4 = new Vector3(15, 0, 15);
-    var point5 = new Vector3(15, 0, 5);
-    var myPath = [point1, point2, point3, point4, point5];
+    var point3 = new Vector3(15, 0, 15);
+    var point4 = new Vector3(15, 0, 5);
+    var myPath = [point1, point2, point3, point4];
     // how many frames to walk each path segment
     var speed = 200;
     // how many frames to pause in between
@@ -43,40 +42,42 @@ define("game", ["require", "exports"], function (require, exports) {
         PatrolPath.prototype.update = function () {
             var transform = gnark.get(Transform);
             var path = gnark.get(PathData);
-            //let rotate = gnark.get(RotateData)
-            if (path.walking) {
-                if (path.fraction < 1) {
-                    transform.position = Vector3.Lerp(path.previousPos, path.target, path.fraction);
-                    path.fraction += 1 / speed;
-                }
-                else {
-                    path.walking = false;
-                    walkClip.pause();
-                    // if (path.nextPathIndex = 2){
-                    //   raiseDeadClip.play()
-                    // }else{
-                    //   turnRClip.play()
-                    // }   
-                }
+            if (distance(transform.position, camera.position) < 2 && path.remainingRest > 0) {
+                raiseDeadClip.play();
+                walkClip.pause();
+                path.remainingRest -= 1;
             }
             else {
-                if (path.remainingRest > 0) {
-                    path.remainingRest -= 1;
+                if (path.walking) {
+                    if (path.fraction < 1) {
+                        transform.position = Vector3.Lerp(path.previousPos, path.target, path.fraction);
+                        path.fraction += 1 / speed;
+                    }
+                    else {
+                        path.walking = false;
+                        walkClip.pause();
+                        turnRClip.play();
+                    }
                 }
                 else {
-                    path.remainingRest = rest;
-                    path.walking = true;
-                    walkClip.play();
-                    // get the next target
-                    path.nextPathIndex += 1;
-                    if (path.nextPathIndex >= myPath.length) {
-                        path.nextPathIndex = 0;
+                    if (path.remainingRest > 0) {
+                        path.remainingRest -= 1;
                     }
-                    path.previousPos = path.target;
-                    path.target = myPath[path.nextPathIndex];
-                    path.fraction = 0;
-                    // turn Gnark in the direction of the next point
-                    transform.lookAt(path.target);
+                    else {
+                        path.remainingRest = rest;
+                        path.walking = true;
+                        walkClip.play();
+                        // get the next target
+                        path.nextPathIndex += 1;
+                        if (path.nextPathIndex >= myPath.length) {
+                            path.nextPathIndex = 0;
+                        }
+                        path.previousPos = path.target;
+                        path.target = myPath[path.nextPathIndex];
+                        path.fraction = 0;
+                        // turn Gnark in the direction of the next point
+                        transform.lookAt(path.target);
+                    }
                 }
             }
         };
@@ -84,6 +85,8 @@ define("game", ["require", "exports"], function (require, exports) {
     }());
     exports.PatrolPath = PatrolPath;
     engine.addSystem(new PatrolPath());
+    // Track user position and rotation
+    var camera = Camera.instance;
     // Add Gnark
     var gnark = new Entity();
     gnark.set(new Transform());
@@ -113,4 +116,13 @@ define("game", ["require", "exports"], function (require, exports) {
     castle.get(Transform).position.set(10, 0, 10);
     //castle.get(Transform).scale.setAll(0.5)
     engine.addEntity(castle);
+    // Get distance
+    /**
+     * Note: It uses {x,z} not {x,y}. The y-coordinate is how high up it is.
+     */
+    function distance(pos1, pos2) {
+        var a = pos1.x - pos2.x;
+        var b = pos1.z - pos2.z;
+        return Math.sqrt(a * a + b * b);
+    }
 });
