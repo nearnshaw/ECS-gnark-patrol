@@ -20,18 +20,18 @@ define("game", ["require", "exports"], function (require, exports) {
     // how many frames to walk each path segment
     var speed = 200;
     // how many frames to pause in between
-    var rest = 60;
+    var rest = 40;
     var PathData = /** @class */ (function () {
         function PathData() {
             this.previousPos = myPath[0];
             this.target = myPath[1];
             this.fraction = 0;
             this.nextPathIndex = 1;
-            this.walking = true;
+            //walking: boolean = true
             this.remainingRest = rest;
         }
         PathData = __decorate([
-            Component("pathData")
+            Component('pathData')
         ], PathData);
         return PathData;
     }());
@@ -42,20 +42,18 @@ define("game", ["require", "exports"], function (require, exports) {
         PatrolPath.prototype.update = function () {
             var transform = gnark.get(Transform);
             var path = gnark.get(PathData);
-            if (distance(transform.position, camera.position) < 4 && path.remainingRest > 0) {
-                path.walking = false;
+            var dist = distance(transform.position, camera.position);
+            if (dist < 4) {
                 raiseDeadClip.play();
                 walkClip.pause();
                 transform.lookAt(camera.position);
             }
-            if (path.walking) {
+            if (walkClip.playing) {
                 if (path.fraction < 1) {
-                    transform.position = Vector3.Lerp(path.previousPos, path.target, path.fraction);
                     path.fraction += 1 / speed;
+                    transform.position = Vector3.Lerp(path.previousPos, path.target, path.fraction);
                 }
                 else {
-                    path.walking = false;
-                    walkClip.pause();
                     path.nextPathIndex += 1;
                     if (path.nextPathIndex >= myPath.length) {
                         path.nextPathIndex = 0;
@@ -66,21 +64,22 @@ define("game", ["require", "exports"], function (require, exports) {
                     transform.lookAt(path.target);
                 }
             }
-            // if resting
+            else if (raiseDeadClip.playing) {
+                if (dist > 4) {
+                    raiseDeadClip.pause();
+                    walkClip.play();
+                    transform.lookAt(path.target);
+                }
+            }
+            // if not walking or shouting
             else {
                 if (path.remainingRest > 0) {
                     path.remainingRest -= 1;
                 }
                 else {
                     path.remainingRest = rest;
-                    path.walking = true;
                     walkClip.play();
-                    // if in corner, get the next target
-                    if (path.fraction >= 1) {
-                        path.fraction = 0;
-                    }
-                    // turn Gnark in the direction of the next point
-                    transform.lookAt(path.target);
+                    path.fraction = 0;
                 }
             }
         };
@@ -95,11 +94,11 @@ define("game", ["require", "exports"], function (require, exports) {
     gnark.set(new Transform());
     gnark.get(Transform).position.set(5, 0, 5);
     gnark.get(Transform).scale.setAll(0.75);
-    gnark.set(new GLTFShape("models/gnark.gltf"));
+    gnark.set(new GLTFShape('models/gnark.gltf'));
     // Add animations
-    var walkClip = new AnimationClip("walk", { speed: 1.2 });
-    var turnRClip = new AnimationClip("turnRight", { loop: false });
-    var raiseDeadClip = new AnimationClip("raiseDead", { loop: false });
+    var walkClip = new AnimationClip('walk', { speed: 1.2 });
+    var turnRClip = new AnimationClip('turnRight', { loop: false });
+    var raiseDeadClip = new AnimationClip('raiseDead');
     gnark.get(GLTFShape).addClip(walkClip);
     gnark.get(GLTFShape).addClip(turnRClip);
     gnark.get(GLTFShape).addClip(raiseDeadClip);
@@ -114,7 +113,7 @@ define("game", ["require", "exports"], function (require, exports) {
     ///////////////
     // Add 3D model for scenery
     var castle = new Entity();
-    castle.add(new GLTFShape("models/Pirate_Ground.gltf"));
+    castle.add(new GLTFShape('models/Pirate_Ground.gltf'));
     castle.add(new Transform());
     castle.get(Transform).position.set(10, 0, 10);
     //castle.get(Transform).scale.setAll(0.5)
