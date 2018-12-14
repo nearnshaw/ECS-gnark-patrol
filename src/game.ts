@@ -26,13 +26,13 @@ export class PatrolPath {
     let transform = gnark.get(Transform)
     let path = gnark.get(PathData)
     if (distance(transform.position, camera.position) < 2 && path.remainingRest > 0 ){
-           raiseDeadClip.play()
-           walkClip.pause()
-           path.remainingRest -= 1
+        path.walking = false     
+        raiseDeadClip.play()
+        walkClip.pause()
+        transform.lookAt(camera.position)   
     }
-    else
-      {
-      if (path.walking){
+   
+    if (path.walking){
         if (path.fraction < 1) {
           transform.position = Vector3.Lerp(
             path.previousPos,
@@ -43,9 +43,17 @@ export class PatrolPath {
         } else{
           path.walking = false
           walkClip.pause()
+          path.nextPathIndex += 1
+          if (path.nextPathIndex >= myPath.length) {
+              path.nextPathIndex = 0
+          }
+          path.previousPos = path.target
+          path.target = myPath[path.nextPathIndex]
           turnRClip.play() 
+          transform.lookAt(path.target)
         }
       }
+      // if resting
       else
       {
         if (path.remainingRest > 0){
@@ -55,20 +63,15 @@ export class PatrolPath {
           path.remainingRest = rest
           path.walking = true
           walkClip.play()
-          // get the next target
-          path.nextPathIndex += 1
-          if (path.nextPathIndex >= myPath.length) {
-            path.nextPathIndex = 0
-          }
-          path.previousPos = path.target
-          path.target = myPath[path.nextPathIndex]
-          path.fraction = 0
+          // if in corner, get the next target
+          if (path.fraction >= 1){
+            path.fraction = 0
+          }   
           // turn Gnark in the direction of the next point
           transform.lookAt(path.target)
         }
       }
     }
-  }
 }
 
 engine.addSystem(new PatrolPath())

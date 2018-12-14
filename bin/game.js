@@ -43,41 +43,44 @@ define("game", ["require", "exports"], function (require, exports) {
             var transform = gnark.get(Transform);
             var path = gnark.get(PathData);
             if (distance(transform.position, camera.position) < 2 && path.remainingRest > 0) {
+                path.walking = false;
                 raiseDeadClip.play();
                 walkClip.pause();
-                path.remainingRest -= 1;
+                transform.lookAt(camera.position);
             }
-            else {
-                if (path.walking) {
-                    if (path.fraction < 1) {
-                        transform.position = Vector3.Lerp(path.previousPos, path.target, path.fraction);
-                        path.fraction += 1 / speed;
-                    }
-                    else {
-                        path.walking = false;
-                        walkClip.pause();
-                        turnRClip.play();
-                    }
+            if (path.walking) {
+                if (path.fraction < 1) {
+                    transform.position = Vector3.Lerp(path.previousPos, path.target, path.fraction);
+                    path.fraction += 1 / speed;
                 }
                 else {
-                    if (path.remainingRest > 0) {
-                        path.remainingRest -= 1;
+                    path.walking = false;
+                    walkClip.pause();
+                    path.nextPathIndex += 1;
+                    if (path.nextPathIndex >= myPath.length) {
+                        path.nextPathIndex = 0;
                     }
-                    else {
-                        path.remainingRest = rest;
-                        path.walking = true;
-                        walkClip.play();
-                        // get the next target
-                        path.nextPathIndex += 1;
-                        if (path.nextPathIndex >= myPath.length) {
-                            path.nextPathIndex = 0;
-                        }
-                        path.previousPos = path.target;
-                        path.target = myPath[path.nextPathIndex];
+                    path.previousPos = path.target;
+                    path.target = myPath[path.nextPathIndex];
+                    turnRClip.play();
+                    transform.lookAt(path.target);
+                }
+            }
+            // if resting
+            else {
+                if (path.remainingRest > 0) {
+                    path.remainingRest -= 1;
+                }
+                else {
+                    path.remainingRest = rest;
+                    path.walking = true;
+                    walkClip.play();
+                    // if in corner, get the next target
+                    if (path.fraction >= 1) {
                         path.fraction = 0;
-                        // turn Gnark in the direction of the next point
-                        transform.lookAt(path.target);
                     }
+                    // turn Gnark in the direction of the next point
+                    transform.lookAt(path.target);
                 }
             }
         };
