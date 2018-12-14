@@ -20,7 +20,7 @@ define("game", ["require", "exports"], function (require, exports) {
     // how many frames to walk each path segment
     var speed = 200;
     // how many frames to pause in between
-    var rest = 40;
+    var rest = 25;
     var PathData = /** @class */ (function () {
         function PathData() {
             this.previousPos = myPath[0];
@@ -28,7 +28,7 @@ define("game", ["require", "exports"], function (require, exports) {
             this.fraction = 0;
             this.nextPathIndex = 1;
             //walking: boolean = true
-            this.remainingRest = rest;
+            this.turnTime = rest;
         }
         PathData = __decorate([
             Component('pathData')
@@ -54,13 +54,14 @@ define("game", ["require", "exports"], function (require, exports) {
                     transform.position = Vector3.Lerp(path.previousPos, path.target, path.fraction);
                 }
                 else {
+                    walkClip.pause();
+                    turnRClip.play();
+                    path.previousPos = path.target;
                     path.nextPathIndex += 1;
                     if (path.nextPathIndex >= myPath.length) {
                         path.nextPathIndex = 0;
                     }
-                    path.previousPos = path.target;
                     path.target = myPath[path.nextPathIndex];
-                    turnRClip.play();
                     transform.lookAt(path.target);
                 }
             }
@@ -73,11 +74,11 @@ define("game", ["require", "exports"], function (require, exports) {
             }
             // if not walking or shouting
             else {
-                if (path.remainingRest > 0) {
-                    path.remainingRest -= 1;
+                if (path.turnTime > 0) {
+                    path.turnTime -= 1;
                 }
                 else {
-                    path.remainingRest = rest;
+                    path.turnTime = rest;
                     walkClip.play();
                     path.fraction = 0;
                 }

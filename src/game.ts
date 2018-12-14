@@ -9,7 +9,7 @@ const myPath: Vector3[] = [point1, point2, point3, point4]
 const speed = 200
 
 // how many frames to pause in between
-const rest = 40
+const rest = 25
 
 @Component('pathData')
 export class PathData {
@@ -18,7 +18,7 @@ export class PathData {
   fraction: number = 0
   nextPathIndex: number = 1
   //walking: boolean = true
-  remainingRest: number = rest
+  turnTime: number = rest
 }
 
 export class PatrolPath {
@@ -41,13 +41,14 @@ export class PatrolPath {
           path.fraction
         )
       } else {
+        walkClip.pause()
+        turnRClip.play()
+        path.previousPos = path.target
         path.nextPathIndex += 1
         if (path.nextPathIndex >= myPath.length) {
           path.nextPathIndex = 0
         }
-        path.previousPos = path.target
         path.target = myPath[path.nextPathIndex]
-        turnRClip.play()
         transform.lookAt(path.target)
       }
     }
@@ -60,10 +61,10 @@ export class PatrolPath {
     }
     // if not walking or shouting
     else {
-      if (path.remainingRest > 0) {
-        path.remainingRest -= 1
+      if (path.turnTime > 0) {
+        path.turnTime -= 1
       } else {
-        path.remainingRest = rest
+        path.turnTime = rest
         walkClip.play()
         path.fraction = 0
       }
