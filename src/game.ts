@@ -25,7 +25,7 @@ export class PatrolPath {
   update() {
     let transform = gnark.get(Transform)
     let path = gnark.get(PathData)
-    if (distance(transform.position, camera.position) < 2 && path.remainingRest > 0 ){
+    if (distance(transform.position, camera.position) < 4 && path.remainingRest > 0 ){
         path.walking = false     
         raiseDeadClip.play()
         walkClip.pause()
@@ -87,7 +87,7 @@ gnark.get(Transform).scale.setAll(0.75)
 gnark.set(new GLTFShape("models/gnark.gltf"))
 
 // Add animations
-const walkClip = new AnimationClip("walk")
+const walkClip = new AnimationClip("walk", {speed:1.2})
 const turnRClip = new AnimationClip("turnRight", {loop:false})
 const raiseDeadClip = new AnimationClip("raiseDead", {loop:false})
 gnark.get(GLTFShape).addClip(walkClip)

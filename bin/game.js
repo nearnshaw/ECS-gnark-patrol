@@ -42,7 +42,7 @@ define("game", ["require", "exports"], function (require, exports) {
         PatrolPath.prototype.update = function () {
             var transform = gnark.get(Transform);
             var path = gnark.get(PathData);
-            if (distance(transform.position, camera.position) < 2 && path.remainingRest > 0) {
+            if (distance(transform.position, camera.position) < 4 && path.remainingRest > 0) {
                 path.walking = false;
                 raiseDeadClip.play();
                 walkClip.pause();
@@ -97,7 +97,7 @@ define("game", ["require", "exports"], function (require, exports) {
     gnark.get(Transform).scale.setAll(0.75);
     gnark.set(new GLTFShape("models/gnark.gltf"));
     // Add animations
-    var walkClip = new AnimationClip("walk");
+    var walkClip = new AnimationClip("walk", { speed: 1.2 });
     var turnRClip = new AnimationClip("turnRight", { loop: false });
     var raiseDeadClip = new AnimationClip("raiseDead", { loop: false });
     gnark.get(GLTFShape).addClip(walkClip);
