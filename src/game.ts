@@ -11,26 +11,19 @@ const speed = 200
 // how many frames to pause in between
 const rest = 25
 
-@Component('pathData')
-export class PathData {
+@Component('lerpData')
+export class LerpData {
   previousPos: Vector3 = myPath[0]
   target: Vector3 = myPath[1]
   fraction: number = 0
   nextPathIndex: number = 1
-  //walking: boolean = true
   turnTime: number = rest
 }
 
 export class PatrolPath {
   update() {
     let transform = gnark.get(Transform)
-    let path = gnark.get(PathData)
-    let dist = distance(transform.position, camera.position)
-    if ( dist < 4) {
-      raiseDeadClip.play()
-      walkClip.pause()
-      transform.lookAt(camera.position)
-    }
+    let path = gnark.get(LerpData)
 
     if (walkClip.playing) {
       if (path.fraction < 1) {
@@ -52,15 +45,8 @@ export class PatrolPath {
         transform.lookAt(path.target)
       }
     }
-    else if (raiseDeadClip.playing){
-      if ( dist > 4) {
-        raiseDeadClip.pause()
-        walkClip.play()
-        transform.lookAt(path.target)
-      }
-    }
     // if not walking or shouting
-    else {
+    else if (!raiseDeadClip.playing) {
       if (path.turnTime > 0) {
         path.turnTime -= 1
       } else {
@@ -73,6 +59,26 @@ export class PatrolPath {
 }
 
 engine.addSystem(new PatrolPath())
+
+export class BattleCry {
+  update() {
+    let transform = gnark.get(Transform)
+    let path = gnark.get(LerpData)
+    let dist = distance(transform.position, camera.position)
+    if ( dist < 4) {
+      raiseDeadClip.play()
+      walkClip.pause()
+      transform.lookAt(camera.position)
+    }
+    else if (raiseDeadClip.playing){
+      raiseDeadClip.pause()
+      walkClip.play()
+      transform.lookAt(path.target)
+    }
+  }
+}
+
+engine.addSystem(new BattleCry())
 
 // Track user position and rotation
 const camera = Camera.instance
@@ -96,7 +102,7 @@ gnark.get(GLTFShape).addClip(raiseDeadClip)
 walkClip.play()
 
 // add a path data component
-gnark.set(new PathData())
+gnark.set(new LerpData())
 //gnark.set(new RotateData())
 gnark.get(Transform).rotation.setEuler(0, 0, 0)
 

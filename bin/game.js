@@ -21,33 +21,26 @@ define("game", ["require", "exports"], function (require, exports) {
     var speed = 200;
     // how many frames to pause in between
     var rest = 25;
-    var PathData = /** @class */ (function () {
-        function PathData() {
+    var LerpData = /** @class */ (function () {
+        function LerpData() {
             this.previousPos = myPath[0];
             this.target = myPath[1];
             this.fraction = 0;
             this.nextPathIndex = 1;
-            //walking: boolean = true
             this.turnTime = rest;
         }
-        PathData = __decorate([
-            Component('pathData')
-        ], PathData);
-        return PathData;
+        LerpData = __decorate([
+            Component('lerpData')
+        ], LerpData);
+        return LerpData;
     }());
-    exports.PathData = PathData;
+    exports.LerpData = LerpData;
     var PatrolPath = /** @class */ (function () {
         function PatrolPath() {
         }
         PatrolPath.prototype.update = function () {
             var transform = gnark.get(Transform);
-            var path = gnark.get(PathData);
-            var dist = distance(transform.position, camera.position);
-            if (dist < 4) {
-                raiseDeadClip.play();
-                walkClip.pause();
-                transform.lookAt(camera.position);
-            }
+            var path = gnark.get(LerpData);
             if (walkClip.playing) {
                 if (path.fraction < 1) {
                     path.fraction += 1 / speed;
@@ -65,15 +58,8 @@ define("game", ["require", "exports"], function (require, exports) {
                     transform.lookAt(path.target);
                 }
             }
-            else if (raiseDeadClip.playing) {
-                if (dist > 4) {
-                    raiseDeadClip.pause();
-                    walkClip.play();
-                    transform.lookAt(path.target);
-                }
-            }
             // if not walking or shouting
-            else {
+            else if (!raiseDeadClip.playing) {
                 if (path.turnTime > 0) {
                     path.turnTime -= 1;
                 }
@@ -88,6 +74,28 @@ define("game", ["require", "exports"], function (require, exports) {
     }());
     exports.PatrolPath = PatrolPath;
     engine.addSystem(new PatrolPath());
+    var BattleCry = /** @class */ (function () {
+        function BattleCry() {
+        }
+        BattleCry.prototype.update = function () {
+            var transform = gnark.get(Transform);
+            var path = gnark.get(LerpData);
+            var dist = distance(transform.position, camera.position);
+            if (dist < 4) {
+                raiseDeadClip.play();
+                walkClip.pause();
+                transform.lookAt(camera.position);
+            }
+            else if (raiseDeadClip.playing) {
+                raiseDeadClip.pause();
+                walkClip.play();
+                transform.lookAt(path.target);
+            }
+        };
+        return BattleCry;
+    }());
+    exports.BattleCry = BattleCry;
+    engine.addSystem(new BattleCry());
     // Track user position and rotation
     var camera = Camera.instance;
     // Add Gnark
@@ -106,7 +114,7 @@ define("game", ["require", "exports"], function (require, exports) {
     // Activate walk animation
     walkClip.play();
     // add a path data component
-    gnark.set(new PathData());
+    gnark.set(new LerpData());
     //gnark.set(new RotateData())
     gnark.get(Transform).rotation.setEuler(0, 0, 0);
     // Add shark to engine
