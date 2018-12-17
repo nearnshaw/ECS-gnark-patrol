@@ -5,29 +5,23 @@ const point4 = new Vector3(15, 0, 5)
 
 const myPath: Vector3[] = [point1, point2, point3, point4]
 
-// how many frames to walk each path segment
-const speed = 200
-
-// how many frames to pause in between
-const rest = 25
-
 @Component('lerpData')
 export class LerpData {
   previousPos: Vector3 = myPath[0]
   target: Vector3 = myPath[1]
   fraction: number = 0
   nextPathIndex: number = 1
-  turnTime: number = rest
+  turnTime: number = 0.8
 }
 
 export class PatrolPath {
-  update() {
+  update(dt: number) {
     let transform = gnark.get(Transform)
     let path = gnark.get(LerpData)
 
     if (walkClip.playing) {
       if (path.fraction < 1) {
-        path.fraction += 1 / speed
+        path.fraction += dt / 6
         transform.position = Vector3.Lerp(
           path.previousPos,
           path.target,
@@ -45,12 +39,11 @@ export class PatrolPath {
         transform.lookAt(path.target)
       }
     }
-    // if not walking or shouting
-    else if (!raiseDeadClip.playing) {
+    else if (turnRClip.playing) {
       if (path.turnTime > 0) {
-        path.turnTime -= 1
+        path.turnTime -= dt
       } else {
-        path.turnTime = rest
+        path.turnTime = 0.8
         walkClip.play()
         path.fraction = 0
       }
@@ -68,6 +61,7 @@ export class BattleCry {
     if ( dist < 4) {
       raiseDeadClip.play()
       walkClip.pause()
+      turnRClip.pause()
       transform.lookAt(camera.position)
     }
     else if (raiseDeadClip.playing){
@@ -91,7 +85,7 @@ gnark.get(Transform).scale.setAll(0.75)
 gnark.set(new GLTFShape('models/gnark.gltf'))
 
 // Add animations
-const walkClip = new AnimationClip('walk', { speed: 1.2 })
+const walkClip = new AnimationClip('walk', { speed: 1 })
 const turnRClip = new AnimationClip('turnRight', { loop: false })
 const raiseDeadClip = new AnimationClip('raiseDead')
 gnark.get(GLTFShape).addClip(walkClip)

@@ -17,17 +17,13 @@ define("game", ["require", "exports"], function (require, exports) {
     var point3 = new Vector3(15, 0, 15);
     var point4 = new Vector3(15, 0, 5);
     var myPath = [point1, point2, point3, point4];
-    // how many frames to walk each path segment
-    var speed = 200;
-    // how many frames to pause in between
-    var rest = 25;
     var LerpData = /** @class */ (function () {
         function LerpData() {
             this.previousPos = myPath[0];
             this.target = myPath[1];
             this.fraction = 0;
             this.nextPathIndex = 1;
-            this.turnTime = rest;
+            this.turnTime = 0.8;
         }
         LerpData = __decorate([
             Component('lerpData')
@@ -38,12 +34,12 @@ define("game", ["require", "exports"], function (require, exports) {
     var PatrolPath = /** @class */ (function () {
         function PatrolPath() {
         }
-        PatrolPath.prototype.update = function () {
+        PatrolPath.prototype.update = function (dt) {
             var transform = gnark.get(Transform);
             var path = gnark.get(LerpData);
             if (walkClip.playing) {
                 if (path.fraction < 1) {
-                    path.fraction += 1 / speed;
+                    path.fraction += dt / 6;
                     transform.position = Vector3.Lerp(path.previousPos, path.target, path.fraction);
                 }
                 else {
@@ -58,13 +54,12 @@ define("game", ["require", "exports"], function (require, exports) {
                     transform.lookAt(path.target);
                 }
             }
-            // if not walking or shouting
-            else if (!raiseDeadClip.playing) {
+            else if (turnRClip.playing) {
                 if (path.turnTime > 0) {
-                    path.turnTime -= 1;
+                    path.turnTime -= dt;
                 }
                 else {
-                    path.turnTime = rest;
+                    path.turnTime = 0.8;
                     walkClip.play();
                     path.fraction = 0;
                 }
@@ -84,6 +79,7 @@ define("game", ["require", "exports"], function (require, exports) {
             if (dist < 4) {
                 raiseDeadClip.play();
                 walkClip.pause();
+                turnRClip.pause();
                 transform.lookAt(camera.position);
             }
             else if (raiseDeadClip.playing) {
@@ -105,7 +101,7 @@ define("game", ["require", "exports"], function (require, exports) {
     gnark.get(Transform).scale.setAll(0.75);
     gnark.set(new GLTFShape('models/gnark.gltf'));
     // Add animations
-    var walkClip = new AnimationClip('walk', { speed: 1.2 });
+    var walkClip = new AnimationClip('walk', { speed: 1 });
     var turnRClip = new AnimationClip('turnRight', { loop: false });
     var raiseDeadClip = new AnimationClip('raiseDead');
     gnark.get(GLTFShape).addClip(walkClip);
