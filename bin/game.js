@@ -12,6 +12,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 define("game", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    // Path to follow while patrolling
     var point1 = new Vector3(5, 0, 5);
     var point2 = new Vector3(5, 0, 15);
     var point3 = new Vector3(15, 0, 15);
@@ -31,6 +32,7 @@ define("game", ["require", "exports"], function (require, exports) {
         return LerpData;
     }());
     exports.LerpData = LerpData;
+    // Walk following the points in the path
     var PatrolPath = /** @class */ (function () {
         function PatrolPath() {
         }
@@ -69,6 +71,7 @@ define("game", ["require", "exports"], function (require, exports) {
     }());
     exports.PatrolPath = PatrolPath;
     engine.addSystem(new PatrolPath());
+    // React and stop walking when the user gets close enough
     var BattleCry = /** @class */ (function () {
         function BattleCry() {
         }
@@ -76,7 +79,7 @@ define("game", ["require", "exports"], function (require, exports) {
             var transform = gnark.get(Transform);
             var path = gnark.get(LerpData);
             var dist = distance(transform.position, camera.position);
-            if (dist < 4) {
+            if (dist < 16) {
                 raiseDeadClip.play();
                 walkClip.pause();
                 turnRClip.pause();
@@ -92,16 +95,18 @@ define("game", ["require", "exports"], function (require, exports) {
     }());
     exports.BattleCry = BattleCry;
     engine.addSystem(new BattleCry());
-    // Track user position and rotation
+    // Object that tracks user position and rotation
     var camera = Camera.instance;
     // Add Gnark
     var gnark = new Entity();
-    gnark.set(new Transform());
-    gnark.get(Transform).position.set(5, 0, 5);
-    gnark.get(Transform).scale.setAll(0.75);
+    gnark.set(new Transform({
+        position: new Vector3(5, 0, 5),
+        scale: new Vector3(0.75, 0.75, 0.75),
+        rotation: Quaternion.Euler(0, 0, 0)
+    }));
     gnark.set(new GLTFShape('models/gnark.gltf'));
     // Add animations
-    var walkClip = new AnimationClip('walk', { speed: 1 });
+    var walkClip = new AnimationClip('walk');
     var turnRClip = new AnimationClip('turnRight', { loop: false });
     var raiseDeadClip = new AnimationClip('raiseDead');
     gnark.get(GLTFShape).addClip(walkClip);
@@ -111,25 +116,25 @@ define("game", ["require", "exports"], function (require, exports) {
     walkClip.play();
     // add a path data component
     gnark.set(new LerpData());
-    //gnark.set(new RotateData())
-    gnark.get(Transform).rotation.setEuler(0, 0, 0);
     // Add shark to engine
     engine.addEntity(gnark);
-    ///////////////
     // Add 3D model for scenery
     var castle = new Entity();
     castle.add(new GLTFShape('models/Pirate_Ground.gltf'));
-    castle.add(new Transform());
-    castle.get(Transform).position.set(10, 0, 10);
-    //castle.get(Transform).scale.setAll(0.5)
+    castle.add(new Transform({
+        position: new Vector3(10, 0, 10)
+    }));
     engine.addEntity(castle);
     // Get distance
-    /**
-     * Note: It uses {x,z} not {x,y}. The y-coordinate is how high up it is.
-     */
+    /*
+    Note:
+    This function really returns distance squared, as it's a lot more efficient to calculate.
+    The square root operation is expensive and isn't really necessary if we compare the result to squared values.
+    We also use {x,z} not {x,y}. The y-coordinate is how high up it is.
+    */
     function distance(pos1, pos2) {
         var a = pos1.x - pos2.x;
         var b = pos1.z - pos2.z;
-        return Math.sqrt(a * a + b * b);
+        return a * a + b * b;
     }
 });

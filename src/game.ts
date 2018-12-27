@@ -1,3 +1,4 @@
+// Path to follow while patrolling
 const point1 = new Vector3(5, 0, 5)
 const point2 = new Vector3(5, 0, 15)
 const point3 = new Vector3(15, 0, 15)
@@ -13,6 +14,8 @@ export class LerpData {
   nextPathIndex: number = 1
   turnTime: number = 0.8
 }
+
+// Walk following the points in the path
 
 export class PatrolPath {
   update(dt: number) {
@@ -53,12 +56,14 @@ export class PatrolPath {
 
 engine.addSystem(new PatrolPath())
 
+// React and stop walking when the user gets close enough
+
 export class BattleCry {
   update() {
     let transform = gnark.get(Transform)
     let path = gnark.get(LerpData)
     let dist = distance(transform.position, camera.position)
-    if ( dist < 4) {
+    if ( dist < 16) {
       raiseDeadClip.play()
       walkClip.pause()
       turnRClip.pause()
@@ -74,18 +79,20 @@ export class BattleCry {
 
 engine.addSystem(new BattleCry())
 
-// Track user position and rotation
+// Object that tracks user position and rotation
 const camera = Camera.instance
 
 // Add Gnark
 let gnark = new Entity()
-gnark.set(new Transform())
-gnark.get(Transform).position.set(5, 0, 5)
-gnark.get(Transform).scale.setAll(0.75)
+gnark.set(new Transform({
+  position: new Vector3(5, 0, 5),
+  scale: new Vector3(0.75, 0.75, 0.75),
+  rotation: Quaternion.Euler(0, 0, 0)
+}))
 gnark.set(new GLTFShape('models/gnark.gltf'))
 
 // Add animations
-const walkClip = new AnimationClip('walk', { speed: 1 })
+const walkClip = new AnimationClip('walk')
 const turnRClip = new AnimationClip('turnRight', { loop: false })
 const raiseDeadClip = new AnimationClip('raiseDead')
 gnark.get(GLTFShape).addClip(walkClip)
@@ -97,28 +104,27 @@ walkClip.play()
 
 // add a path data component
 gnark.set(new LerpData())
-//gnark.set(new RotateData())
-gnark.get(Transform).rotation.setEuler(0, 0, 0)
 
 // Add shark to engine
 engine.addEntity(gnark)
 
-///////////////
-
 // Add 3D model for scenery
 const castle = new Entity()
 castle.add(new GLTFShape('models/Pirate_Ground.gltf'))
-castle.add(new Transform())
-castle.get(Transform).position.set(10, 0, 10)
-//castle.get(Transform).scale.setAll(0.5)
+castle.add(new Transform({
+  position: new Vector3(10, 0, 10)
+}))
 engine.addEntity(castle)
 
 // Get distance
-/**
- * Note: It uses {x,z} not {x,y}. The y-coordinate is how high up it is.
- */
+/* 
+Note:
+This function really returns distance squared, as it's a lot more efficient to calculate.
+The square root operation is expensive and isn't really necessary if we compare the result to squared values.
+We also use {x,z} not {x,y}. The y-coordinate is how high up it is.
+*/
 function distance(pos1: Vector3, pos2: Vector3): number {
   const a = pos1.x - pos2.x
   const b = pos1.z - pos2.z
-  return Math.sqrt(a * a + b * b)
+  return a * a + b * b
 }
