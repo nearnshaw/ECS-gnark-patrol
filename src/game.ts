@@ -8,7 +8,7 @@ const myPath: Vector3[] = [point1, point2, point3, point4]
 
 @Component('lerpData')
 export class LerpData {
-  previousPos: Vector3 = myPath[0]
+  origin: Vector3 = myPath[0]
   target: Vector3 = myPath[1]
   fraction: number = 0
   nextPathIndex: number = 1
@@ -17,7 +17,7 @@ export class LerpData {
 
 // Walk following the points in the path
 
-export class PatrolPath {
+export class GnarkWalk {
   update(dt: number) {
     let transform = gnark.get(Transform)
     let path = gnark.get(LerpData)
@@ -26,14 +26,14 @@ export class PatrolPath {
       if (path.fraction < 1) {
         path.fraction += dt / 6
         transform.position = Vector3.Lerp(
-          path.previousPos,
+          path.origin,
           path.target,
           path.fraction
         )
       } else {
         walkClip.pause()
         turnRClip.play()
-        path.previousPos = path.target
+        path.origin = path.target
         path.nextPathIndex += 1
         if (path.nextPathIndex >= myPath.length) {
           path.nextPathIndex = 0
@@ -54,7 +54,7 @@ export class PatrolPath {
   }
 }
 
-engine.addSystem(new PatrolPath())
+engine.addSystem(new GnarkWalk())
 
 // React and stop walking when the user gets close enough
 
@@ -105,7 +105,7 @@ walkClip.play()
 // add a path data component
 gnark.set(new LerpData())
 
-// Add shark to engine
+// Add Gnark to engine
 engine.addEntity(gnark)
 
 // Add 3D model for scenery
